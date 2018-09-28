@@ -2,9 +2,10 @@ const multiparty = require('multiparty');
 const http = require('http');
 const util = require('util');
 const fs = require('fs');
-const FormData =require('form-data');
+const FormData = require('form-data');
 const { HttpHandler } = require('./lib/transport');
 const fileService = require('./lib/file-service');
+
 const SERVICE_PORT = 3001;
 const SERVICE_PATH = '/api/upload';
 const { url: fileServiceBaseUrl, port: fileServicePort } = fileService;
@@ -40,19 +41,24 @@ const serviceHandler = (req, res) => {
         ...formData.getHeaders()
       };
 
-      // Create request
       const httpReq = httpHandler.request({
         method: 'POST',
         path: fileServiceBaseUrl,
         headers
       }, handleResponse);
 
+      console.log('FILE NAME', name, file);
       formData.append(name, fs.createReadStream(file.path));
       formData.pipe(httpReq);
     });
 
     form.parse(req);
     return;
+  }
+
+  if (req.url === '/') {
+    res.writeHead(200, {'content-type': 'text/html'});
+    return fs.createReadStream('./static/index.html').pipe(res);
   }
 
   // Any other path
